@@ -1,1 +1,2 @@
 add_subdirectory(ExpressionGraph)
+add_subdirectory(Dialect)

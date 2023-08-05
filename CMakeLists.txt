@@ -38,3 +38,4 @@ include_directories(BEFORE
 
 add_subdirectory(lib)
 add_subdirectory(unittest)
+add_subdirectory(include/IncrementalSolver)
