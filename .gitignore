@@ -1,0 +1,10 @@
+# Build directory
+build/
+
+# VS Code project files
+.vscode
+.vs
+
+# JetBrains project files
+.idea
+cmake-build-*
