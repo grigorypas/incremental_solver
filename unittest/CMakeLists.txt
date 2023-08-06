@@ -24,4 +24,5 @@ function(add_gtest_ut)
 endfunction()
 
 add_subdirectory(ExpressionGraph)
+add_subdirectory(Conversion)
 

@@ -10,7 +10,7 @@ include "mlir/IR/EnumAttr.td"
 
 def IS_ModelFormulationDialect : Dialect {
     let name = "ModelFormulation";
-    let summary = "A PLCO model formulation dialect.";
+    let summary = "A model formulation dialect.";
     let description = [{
         This dialect is desing to express model.
     }];
@@ -19,7 +19,6 @@ def IS_ModelFormulationDialect : Dialect {
     //let useDefaultTypePrinterParser = 1;
     let dependentDialects = [
       "::mlir::arith::ArithDialect",
-      "::mlir::math::MathDialect"
   ];
 }
 

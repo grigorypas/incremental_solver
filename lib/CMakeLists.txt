@@ -1,3 +1,4 @@
 add_subdirectory(ExpressionGraph)
 add_subdirectory(Dialect)
 add_subdirectory(ModelBuilder)
+add_subdirectory(Conversion)

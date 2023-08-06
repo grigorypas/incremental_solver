@@ -1,0 +1,7 @@
+add_mlir_library(modelConversion
+ConvertToExpressionGraph.cpp
+
+LINK_LIBS
+MLIRModelFormulation
+ExpressionGraph
+)

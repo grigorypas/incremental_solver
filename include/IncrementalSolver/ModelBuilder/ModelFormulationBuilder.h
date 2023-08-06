@@ -1,6 +1,7 @@
 #ifndef incremental_solver_BUILDER_MODELFORMULATIONBUILDER_H
 #define incremental_solver_BUILDER_MODELFORMULATIONBUILDER_H
 #include "IncrementalSolver/Common/Types.h"
+#include "IncrementalSolver/Dialect/ModelFormulationDialect.h"
 #include "IncrementalSolver/Dialect/ModelFormulationOps.h"
 
 #include "mlir/Dialect/Arith/IR/Arith.h"
@@ -22,6 +23,7 @@
 namespace incremental_solver {
 
 class ModelFormulationBuilder {
+  mlir::MLIRContext context_;
   mlir::OpBuilder builder_;
   mlir::ModuleOp module_;
   std::unordered_map<int, mlir::Value> variables_;
@@ -29,7 +31,8 @@ class ModelFormulationBuilder {
   mlir::FloatType mlirDoubleType_;
 
 public:
-  ModelFormulationBuilder(mlir::MLIRContext &context) : builder_(&context) {
+  ModelFormulationBuilder() : builder_(&context_) {
+    context_.getOrLoadDialect<model::ISModelFormulationDialect>();
     module_ = mlir::ModuleOp::create(builder_.getUnknownLoc());
     builder_.setInsertionPointToEnd(module_.getBody());
     mlirIntegerType_ = builder_.getI64Type();

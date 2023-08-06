@@ -103,7 +103,7 @@ def IS_DoubleComparisonOp: IS_Op<"cmpf", I64>{
     let arguments = (ins IS_CmpPredicateAttr:$predicate, F64:$lhs, F64:$rhs);
 }
 
-def IS_AnyOp : IS_VariadicInputOp<"sumi", I64, I64, SI64Attr>{
+def IS_AnyOp : IS_VariadicInputOp<"any", I64, I64, SI64Attr>{
     let summary = "Determines if at least one of the input binary values is True";
     let description = [{
         This operations takes a vector of binary variables and returns

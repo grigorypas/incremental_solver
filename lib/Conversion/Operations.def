@@ -1,0 +1,5 @@
+OPERATION(model::IntegerDecisionVarDecl)
+OPERATION(mlir::arith::MulIOp)
+OPERATION(mlir::arith::ConstantIntOp)
+OPERATION(model::IntegerSumOp)
+OPERATION(model::IntegerTrackedVarDecl)

@@ -47,6 +47,10 @@ public:
     assert(lb_.index() == 0);
     assert((ub_.index() == 0) == (valueType == ValueType::INTEGER));
   }
+  DecisionVariable(const DecisionVariable &other) = default;
+  DecisionVariable(DecisionVariable &&other) = default;
+  DecisionVariable &operator=(const DecisionVariable &other) = default;
+  DecisionVariable &operator=(DecisionVariable &&other) = default;
   void setBoolValue(bool value) {
     assert(getValueType() == ValueType::INTEGER);
     setIntValue(value ? 1 : 0);
