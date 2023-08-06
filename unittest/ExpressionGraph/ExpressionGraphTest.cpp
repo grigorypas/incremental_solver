@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 using namespace incremental_solver::expression_graph;
+using namespace incremental_solver;
 
 TEST(ExpressionGraph, LinearExpressionOp) {
   ExpressionGraphBuilder graphBuilder;

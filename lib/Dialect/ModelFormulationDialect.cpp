@@ -1,7 +1,7 @@
 #include "IncrementalSolver/Dialect/ModelFormulationDialect.h"
 #include "IncrementalSolver/Dialect/ModelFormulationOps.h"
 
-using namespace plco::model;
+using namespace incremental_solver::model;
 
 #include "IncrementalSolver/Dialect/ModelFormulationOpsDialect.cpp.inc"
 

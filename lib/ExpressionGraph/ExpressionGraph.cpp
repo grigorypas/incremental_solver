@@ -3,6 +3,7 @@
 #include "IncrementalSolver/ExpressionGraph/interface.h"
 
 using namespace incremental_solver::expression_graph;
+using namespace incremental_solver;
 
 Integer ValueExpression::getIntValue() const {
   assert((valueType_ == ValueType::INTEGER) &&

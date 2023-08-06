@@ -4,17 +4,12 @@
 #include <memory>
 #include <variant>
 
+#include "IncrementalSolver/Common/Types.h"
+
 namespace incremental_solver {
 namespace expression_graph {
-using Integer = int64_t;
-using Double = double;
 class Node;
 class ExpressionGraphBuilder;
-
-enum class ValueType {
-  INTEGER,
-  DOUBLE,
-};
 
 class ValueExpression {
   int64_t id_;

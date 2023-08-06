@@ -14,7 +14,7 @@ def IS_ModelFormulationDialect : Dialect {
     let description = [{
         This dialect is desing to express model.
     }];
-    let cppNamespace = "plco::model";
+    let cppNamespace = "incremental_solver::model";
 
     //let useDefaultTypePrinterParser = 1;
     let dependentDialects = [
@@ -32,7 +32,7 @@ def IS_CmpPredicateAttr : I64EnumAttr<
       I64EnumAttrCase<"LEQ", 2>,
       I64EnumAttrCase<"GEQ", 3>,
     ]> {
-   let cppNamespace = "plco::model";
+   let cppNamespace = "incremental_solver::model";
 }
 
 

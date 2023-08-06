@@ -4,7 +4,7 @@
 #include "mlir/IR/Matchers.h"
 #include "mlir/IR/PatternMatch.h"
 
-using namespace plco;
+using namespace incremental_solver;
 
 static bool isTrueConst(mlir::Value val) {
   if (!val.getType().isInteger(1)) {

@@ -29,7 +29,7 @@ def IS_IntegerTrackedVarDecl: IS_OpInOut<"integerTrackedVar">{
         If an expression is tracked, it cannot be optimized away.
         Its value can be queried by user. 
     }];
-    let arguments = (ins I64:$value, I64Attr:$id, I64Attr:$lowerBound, I64Attr:$upperBound);
+    let arguments = (ins I64:$value, I64Attr:$id);
     let assemblyFormat = "$value ` ` `[` `id` `=` $id `]` attr-dict";
 }
 
@@ -53,7 +53,7 @@ def IS_IntegerDecisionVarDecl: IS_OpInOut<"integerDecisionVar">{
         as metadata for optimization purposes. 
     }];
     let arguments = (ins SI64Attr:$value, I64Attr:$id, SI64Attr:$lowerBound, SI64Attr:$upperBound);
-    let results = (outs I64:$res); 
+    let results = (outs I64:$result); 
 }
 
 def IS_DoubleDecisionVarDecl: IS_OpInOut<"doubleDecisionVar">{
@@ -66,6 +66,7 @@ def IS_DoubleDecisionVarDecl: IS_OpInOut<"doubleDecisionVar">{
         as metadata for optimization purposes. 
     }];
     let arguments = (ins F64Attr:$value, I64Attr:$id, F64Attr:$lowerBound, F64Attr:$upperBound);
+    let results = (outs F64:$result);
 } 
 
 def IS_IntegerSumOp: IS_VariadicInputOp<"sumi", I64, I64, SI64Attr, [Commutative, SameOperandsAndResultType]>{
