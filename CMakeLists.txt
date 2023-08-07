@@ -25,6 +25,13 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   include_directories("${LLVM_BINARY_DIR}/include" "${LLVM_INCLUDE_DIR}")
   include_directories(${MLIR_INCLUDE_DIRS})
   link_directories("${LLVM_LIBRARY_DIR}")
+
+  # Python
+  find_package(Python3 REQUIRED COMPONENTS Development Interpreter)
+  include_directories(${Python3_INCLUDE_DIRS})
+  link_directories(${Python3_LIBRARY_DIRS})
+  link_libraries(${Python3_LIBRARIES})
+  add_link_options(${Python3_LINK_OPTIONS})
 endif()
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND NOT MSVC_IDE)
@@ -36,6 +43,11 @@ include_directories(BEFORE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
 
+# Disable warnings that show up in external code (gtest;pybind11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wno-covered-switch-default")
+
 add_subdirectory(lib)
 add_subdirectory(unittest)
 add_subdirectory(include/IncrementalSolver)
+add_subdirectory(third_party)
+add_subdirectory(python)
