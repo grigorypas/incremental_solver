@@ -2,6 +2,7 @@
 #include "IncrementalSolver/Conversion/ConvertToExpressionGraph.h"
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 using namespace incremental_solver;
@@ -13,6 +14,7 @@ void ModelBuilderWrapper::compile() {
 
 void init_model_builder(py::module &m) {
   py::class_<ModelBuilderWrapper>(m, "ModelBuilder")
+      .def(py::init())
       .def("compile", &ModelBuilderWrapper::compile)
       .def("get_decision_variables", &ModelBuilderWrapper::getDecisionVariables)
       .def("get_tracked_expressions",
