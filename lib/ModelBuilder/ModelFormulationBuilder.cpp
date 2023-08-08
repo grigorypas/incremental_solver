@@ -61,6 +61,15 @@ void ModelFormulationBuilder::makeDoubleVarTracked(int64_t id) {
       builder_.getUnknownLoc(), value, id);
 }
 
+void ModelFormulationBuilder::markAsTracked(int64_t id) {
+  auto value = getValueFromId(id);
+  if (value.getType().isInteger(64)) {
+    makeIntegerVarTracked(id);
+  } else {
+    makeDoubleVarTracked(id);
+  }
+}
+
 mlir::Value
 ModelFormulationBuilder::emitIntegerConstAssignment(Integer value,
                                                     std::optional<int64_t> id) {

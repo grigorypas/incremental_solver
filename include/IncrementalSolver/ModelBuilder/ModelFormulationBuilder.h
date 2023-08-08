@@ -50,6 +50,7 @@ public:
                                std::optional<Double> lowerBound = std::nullopt,
                                std::optional<Double> upperBound = std::nullopt);
 
+  void markAsTracked(int64_t id);
   void makeIntegerVarTracked(int64_t id);
   void makeDoubleVarTracked(int64_t id);
 
