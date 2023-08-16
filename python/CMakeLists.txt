@@ -1,1 +1,1 @@
-add_subdirectory(IncrementalSolver/bindings)
+add_subdirectory(incremental_solver/bindings)

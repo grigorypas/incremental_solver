@@ -10,3 +10,5 @@ ExpressionGraph
 modelConversion
 ModelFormulationBuilder
 )
+
+install(TARGETS isbindings DESTINATION .)

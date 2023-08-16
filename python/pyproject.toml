@@ -1,0 +1,21 @@
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "incremental_solver"
+version = "0.1.0"
+
+[tool.scikit-build]
+# This controls the CMake build type
+cmake.build-type = "Release"
+
+# The targets to build - empty builds all default targets.
+cmake.targets = ["isbindings"]
+
+# The source directory to use when building the project. Currently only affects
+# the native builder (not the setuptools plugin).
+cmake.source-dir = "../"
+
+# Verbose printout when building.
+cmake.verbose = true
