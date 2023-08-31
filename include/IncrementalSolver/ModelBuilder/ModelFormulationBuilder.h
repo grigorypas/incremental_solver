@@ -49,6 +49,8 @@ public:
   mlir::Value addDoubleVarDecl(Double initialValue, int64_t id,
                                std::optional<Double> lowerBound = std::nullopt,
                                std::optional<Double> upperBound = std::nullopt);
+  mlir::Value emitCastToDouble(mlir::Value val,
+                               std::optional<int64_t> id = std::nullopt);
 
   void markAsTracked(int64_t id);
   void makeIntegerVarTracked(int64_t id);

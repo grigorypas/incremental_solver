@@ -8,3 +8,8 @@ build/
 # JetBrains project files
 .idea
 cmake-build-*
+
+# PyCharm
+venv/
+__pycache__/
+.idea

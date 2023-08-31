@@ -64,6 +64,20 @@ public:
   }
 };
 
+template <typename T, class F>
+class FuncOp final : public SimpleEdge<Node, Node> {
+  F func_;
+
+public:
+  FuncOp(Node *fromNode, Node *toNode, F func)
+      : SimpleEdge(fromNode, toNode), func_(std::move(func)) {}
+  void propagate(NodeQueue &queue) override {
+    T value = fromNode_->getNewValue<T>();
+    toNode_->setNewValue(func_(value));
+    queue.push(toNode_);
+  }
+};
+
 } // namespace expression_graph
 } // namespace incremental_solver
 

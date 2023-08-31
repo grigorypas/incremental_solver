@@ -44,7 +44,7 @@ public:
                    std::shared_ptr<ExpressionGraphBuilder> graph)
       : ValueExpression(valueType, node, id), lb_(std::move(lb)),
         ub_(std::move(ub)), graph_(std::move(graph)) {
-    assert(lb_.index() == 0);
+    assert((lb_.index() == 0) == (valueType == ValueType::INTEGER));
     assert((ub_.index() == 0) == (valueType == ValueType::INTEGER));
   }
   DecisionVariable(const DecisionVariable &other) = default;
@@ -60,8 +60,8 @@ public:
 
 private:
   template <typename T> void checkBounds(T value) {
-    assert(value >= std::get<Integer>(lb_) && "Lower bound is violated");
-    assert(value <= std::get<Integer>(ub_) && "Upper bound is violated");
+    assert(value >= std::get<T>(lb_) && "Lower bound is violated");
+    assert(value <= std::get<T>(ub_) && "Upper bound is violated");
   }
 };
 

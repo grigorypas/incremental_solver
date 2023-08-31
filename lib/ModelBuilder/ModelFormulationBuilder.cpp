@@ -50,6 +50,16 @@ ModelFormulationBuilder::addDoubleVarDecl(Double initialValue, int64_t id,
       id);
 }
 
+mlir::Value
+ModelFormulationBuilder::emitCastToDouble(mlir::Value val,
+                                          std::optional<int64_t> id) {
+  assert(val.getType().isInteger(64) && "Input value must be integer");
+  return registerVariable(
+      builder_.create<incremental_solver::model::CastToDoubleOp>(
+          builder_.getUnknownLoc(), val),
+      id);
+}
+
 void ModelFormulationBuilder::makeIntegerVarTracked(int64_t id) {
   auto value = getValueFromId(id);
   builder_.create<incremental_solver::model::IntegerTrackedVarDecl>(
@@ -127,6 +137,9 @@ mlir::Value
 ModelFormulationBuilder::emitDoubleMultiply(mlir::Value var, double factor,
                                             std::optional<int64_t> id) {
   auto vFactor = emitDoubleConstAssignment(factor);
+  if (var.getType().isInteger(64)) {
+    var = emitCastToDouble(var);
+  }
   return registerVariable(builder_.create<mlir::arith::MulFOp>(
                               builder_.getUnknownLoc(), var, vFactor),
                           id);

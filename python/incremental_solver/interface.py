@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Optional, Dict, Tuple, Union, List
+from typing import Optional, Dict, Tuple, Union, List
 from enum import Enum
 from abc import ABC, abstractmethod
 from isbindings import ModelBuilder
@@ -23,8 +23,8 @@ class TmpExpression(ABC):
         self._value_type: Optional[ValueType] = None
         self._id: Optional[int] = None
 
-    def _set_id(self, id: int) -> None:
-        self._id = id
+    def _set_id(self, var_id: int) -> None:
+        self._id = var_id
 
     def _get_or_build(self, engine: "Engine") -> Tuple[int, ValueType]:
         if self._index is not None:
@@ -37,8 +37,8 @@ class TmpExpression(ABC):
             raise ValueError(
                 "Cannot modify in-place. The expression has already been used")
 
+    @staticmethod
     def _convert_to_index_and_type(
-            self,
             var: VarDataType,
             engine: "Engine"
     ) -> Tuple[int, ValueType]:
@@ -62,9 +62,9 @@ class LinearTmpExpression(TmpExpression):
 
     @staticmethod
     def create(
-        vars: List[VarDataType],
-        coefficients: List[NumberType],
-        bias: NumberType = 0
+            vars: List[VarDataType],
+            coefficients: List[NumberType],
+            bias: NumberType = 0
     ) -> "LinearTmpExpression":
         if len(vars) != len(coefficients):
             raise ValueError(
@@ -74,30 +74,42 @@ class LinearTmpExpression(TmpExpression):
         expr._coefficients = list(coefficients)
         return expr
 
+    def __iadd__(self, other: Union[NumberType, VarDataType]) -> "LinearTmpExpression":
+        if isinstance(other, NumberType):
+            self._bias += other
+        elif isinstance(other, LinearTmpExpression):
+            self._bias += other._bias
+            self._vars.extend(other._vars)
+            self._coefficients.extend(other._coefficients)
+        else:
+            self._vars.append(other)
+            self._coefficients.append(1)
+        return self
+
     def _build(self, engine: "Engine") -> Tuple[int, ValueType]:
         if len(self._vars) == 0:
-            return self._emit_const(self._bias)
+            return self._emit_const(self._bias, engine)
         value_type = ValueType.INTEGER
         if isinstance(self._bias, float):
             value_type = ValueType.CONTINUOUS
-        var_indeces = []
+        var_indexes = []
         for v, c in zip(self._vars, self._coefficients):
             ind, cur_value_type = self._convert_to_index_and_type(v, engine)
             ind, cur_value_type = self._emit_multiply(
                 ind, c, cur_value_type, engine)
             if cur_value_type == ValueType.CONTINUOUS:
                 value_type = ValueType.CONTINUOUS
-            var_indeces.append(ind)
+            var_indexes.append(ind)
         if self._bias != 0:
-            var_indeces.append(self._emit_const(self._bias))
+            var_indexes.append(self._emit_const(self._bias, engine)[0])
         if value_type == ValueType.INTEGER:
-            ind = engine._model_builder.emit_integer_sum(var_indeces, self._id)
+            ind = engine._model_builder.emit_integer_sum(var_indexes, self._id)
         else:
-            ind = engine._model_builder.emit_double_sum(var_indeces, self._id)
+            ind = engine._model_builder.emit_double_sum(var_indexes, self._id)
         return ind, value_type
 
+    @staticmethod
     def _emit_multiply(
-            self,
             ind: int,
             c: NumberType,
             var_value_type: ValueType,
@@ -109,15 +121,15 @@ class LinearTmpExpression(TmpExpression):
             return engine._model_builder.emit_double_multiply(ind, c, None), ValueType.CONTINUOUS
         return engine._model_builder.emit_integer_multiply(ind, c, None), ValueType.INTEGER
 
+    @staticmethod
     def _emit_const(
-            self,
             c: NumberType,
             engine: "Engine",
-            id: Optional[int]
+            var_id: Optional[int] = None
     ) -> Tuple[int, ValueType]:
         if isinstance(c, float):
-            return engine._model_builder.emit_double_const_assignment(c, id), ValueType.CONTINUOUS
-        return engine._model_builder.emit_integer_const_assignment(c, id), ValueType.INTEGER
+            return engine._model_builder.emit_double_const_assignment(c, var_id), ValueType.CONTINUOUS
+        return engine._model_builder.emit_integer_const_assignment(c, var_id), ValueType.INTEGER
 
 
 class Variable(object):
@@ -158,6 +170,33 @@ class Variable(object):
     def value(self, val: float) -> None:
         raise ValueError(
             "Setting values is not supported on derived variables")
+
+    def __mul__(self, other: NumberType) -> LinearTmpExpression:
+        return LinearTmpExpression.create(vars=[self], coefficients=[other])
+
+    def __rmul__(self, other: NumberType):
+        return self.__mul__(other)
+
+    def __truediv__(self, other: NumberType) -> LinearTmpExpression:
+        if other == 0:
+            raise ValueError("Division by 0!")
+        return self.__mul__(1.0 / other)
+
+    def __add__(self, other: Union[NumberType, VarDataType]) -> LinearTmpExpression:
+        expr = LinearTmpExpression.create(vars=[self], coefficients=[1])
+        expr += other
+        return expr
+
+    def __radd__(self, other: Union[NumberType, VarDataType]) -> LinearTmpExpression:
+        return self.__add__(other)
+
+    def __repr__(self) -> str:
+        return f"Variable(id={self._id}, is_integer={self._is_integer})"
+
+    def __str__(self) -> str:
+        if self._var is None:
+            return repr(self)
+        return str(self.value)
 
 
 class DecisionVariable(Variable):
@@ -204,16 +243,16 @@ class Engine:
             lower_bound: Optional[int] = None,
             upper_bound: Optional[int] = None
     ) -> DecisionVariable:
-        self._throw_if_comiled()
-        id = self._create_id()
+        self._throw_if_compiled()
+        var_id = self._create_id()
         if lower_bound is not None and value < lower_bound:
             raise ValueError("Value is less than lower bound")
         if upper_bound is not None and value > upper_bound:
             raise ValueError("Value is greater than upper bound")
-        var = DecisionVariable(id, True, lower_bound, upper_bound)
+        var = DecisionVariable(var_id, True, lower_bound, upper_bound)
         ind = self._model_builder.add_integer_var_decl(
-            value, id, lower_bound, upper_bound)
-        self._vars[id] = (var, ind)
+            value, var_id, lower_bound, upper_bound)
+        self._vars[var_id] = (var, ind)
         return var
 
     def create_binary_variable(self, value: bool) -> DecisionVariable:
@@ -221,23 +260,22 @@ class Engine:
             return self.create_integer_variable(1, 0, 1)
         return self.create_integer_variable(0, 0, 1)
 
-    def create_continous_variable(
+    def create_continuous_variable(
             self,
-            id: int,
             value: float,
             lower_bound: Optional[float] = None,
             upper_bound: Optional[float] = None
     ) -> DecisionVariable:
-        self._throw_if_comiled()
-        id = self._create_id()
+        self._throw_if_compiled()
+        var_id = self._create_id()
         if lower_bound is not None and value < lower_bound:
             raise ValueError("Value is less than lower bound")
         if upper_bound is not None and value > upper_bound:
             raise ValueError("Value is greater than upper bound")
-        var = DecisionVariable(id, False, lower_bound, upper_bound)
+        var = DecisionVariable(var_id, False, lower_bound, upper_bound)
         ind = self._model_builder.add_double_var_decl(
-            value, id, lower_bound, upper_bound)
-        self._vars[id] = (var, ind)
+            value, var_id, lower_bound, upper_bound)
+        self._vars[var_id] = (var, ind)
         return var
 
     def compile(self) -> None:
@@ -264,7 +302,7 @@ class Engine:
         self._model_builder = None
 
     def __call__(self, expr: Union[NumberType, VarDataType]) -> Variable:
-        self._throw_if_comiled()
+        self._throw_if_compiled()
         if isinstance(expr, Variable):
             return expr
         if isinstance(expr, NumberType):
@@ -276,7 +314,7 @@ class Engine:
         self._vars[id] = (var, ind)
         return var
 
-    def _throw_if_comiled(self) -> None:
+    def _throw_if_compiled(self) -> None:
         if self._compiled:
             raise ValueError("The model cannot be modified after compilation")
 

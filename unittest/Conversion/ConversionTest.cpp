@@ -46,6 +46,56 @@ TEST(Conversion, SumInt) {
   ASSERT_EQ(expressions.size(), 1);
   auto &expr = expressions[0];
   ASSERT_EQ(expr.getIntValue(), 25);
-  // varMap[1].setIntValue(20);
-  // ASSERT_EQ(expr.getIntValue(), 30);
+}
+
+TEST(Conversion, SumWithConst) {
+  ModelFormulationBuilder modelBuilder;
+  auto v1 = modelBuilder.addIntegerVarDecl(10, 0);
+  auto v2 = modelBuilder.addIntegerVarDecl(5, 1);
+  auto v2_mult = modelBuilder.emitIntegerMultiply(v2, 3);
+  auto c = modelBuilder.emitIntegerConstAssignment(7);
+  modelBuilder.emitIntegerSum({v1, v2_mult, c}, 2);
+  modelBuilder.markAsTracked(2);
+  std::vector<DecisionVariable> vars;
+  std::vector<ValueExpression> expressions;
+  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  auto &expr = expressions[0];
+  ASSERT_EQ(expr.getIntValue(), 32);
+}
+
+TEST(Conversion, DoubleVar) {
+  ModelFormulationBuilder modelBuilder;
+  modelBuilder.addDoubleVarDecl(12.5, 0);
+  std::vector<DecisionVariable> vars;
+  std::vector<ValueExpression> expressions;
+  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  ASSERT_EQ(vars.size(), 1);
+  auto &var = vars[0];
+  ASSERT_EQ(var.getDoubleValue(), 12.5);
+  var.setDoubleValue(20.3);
+  ASSERT_EQ(var.getDoubleValue(), 20.3);
+}
+
+TEST(Converstion, DoubleMultiply) {
+  ModelFormulationBuilder modelBuilder;
+  auto v1 = modelBuilder.addDoubleVarDecl(10.5, 0);
+  modelBuilder.emitDoubleMultiply(v1, 2.0, 1);
+  modelBuilder.markAsTracked(1);
+  std::vector<DecisionVariable> vars;
+  std::vector<ValueExpression> expressions;
+  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  auto &expr = expressions[0];
+  ASSERT_NEAR(expr.getDoubleValue(), 21.0, 0.001);
+}
+
+TEST(Converstion, IntVarMultiplyByDouble) {
+  ModelFormulationBuilder modelBuilder;
+  auto v1 = modelBuilder.addIntegerVarDecl(10, 0);
+  modelBuilder.emitDoubleMultiply(v1, 0.5, 1);
+  modelBuilder.markAsTracked(1);
+  std::vector<DecisionVariable> vars;
+  std::vector<ValueExpression> expressions;
+  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  auto &expr = expressions[0];
+  ASSERT_NEAR(expr.getDoubleValue(), 5.0, 0.001);
 }

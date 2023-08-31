@@ -103,6 +103,12 @@ def IS_DoubleComparisonOp: IS_Op<"cmpf", I64>{
     let arguments = (ins IS_CmpPredicateAttr:$predicate, F64:$lhs, F64:$rhs);
 }
 
+def IS_CastToDoubleOp: IS_Op<"cast_to_double", F64>{
+    let summary = "Casts integer value to double";
+    let description = [{Casts integer value to double}];
+    let arguments = (ins I64:$input);
+}
+
 def IS_AnyOp : IS_VariadicInputOp<"any", I64, I64, SI64Attr>{
     let summary = "Determines if at least one of the input binary values is True";
     let description = [{

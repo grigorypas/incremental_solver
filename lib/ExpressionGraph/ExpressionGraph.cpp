@@ -11,7 +11,7 @@ Integer ValueExpression::getIntValue() const {
   return node_->getNewValue<Integer>();
 }
 Double ValueExpression::getDoubleValue() const {
-  assert((valueType_ != ValueType::DOUBLE) &&
+  assert((valueType_ == ValueType::DOUBLE) &&
          "Expression is not of DOUBLE type. Please use getIntValue() instead.");
   return node_->getNewValue<Double>();
 }
