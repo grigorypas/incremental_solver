@@ -118,6 +118,11 @@ ModelFormulationBuilder::emitIntegerSum(std::vector<mlir::Value> inputValues,
 mlir::Value
 ModelFormulationBuilder::emitDoubleSum(std::vector<mlir::Value> inputValues,
                                        std::optional<int64_t> id) {
+  for (size_t ind = 0; ind < inputValues.size(); ++ind) {
+    if (inputValues[ind].getType().isInteger(64)) {
+      inputValues[ind] = emitCastToDouble(inputValues[ind]);
+    }
+  }
   return registerVariable(
       builder_.create<incremental_solver::model::DoubleSumOp>(
           builder_.getUnknownLoc(), mlirDoubleType_, std::move(inputValues)),

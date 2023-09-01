@@ -23,13 +23,11 @@ static bool isConst(mlir::Value value) {
          mlir::isa<mlir::arith::ConstantFloatOp>(op);
 }
 
-template <typename T> bool isOperationConst(T &op);
-
-template <> bool isOperationConst(mlir::arith::MulIOp &op) {
+static bool isOperationConst(mlir::arith::MulIOp &op) {
   return isConst(op.getLhs()) && isConst(op.getRhs());
 }
 
-template <> bool isOperationConst(mlir::arith::MulFOp &op) {
+static bool isOperationConst(mlir::arith::MulFOp &op) {
   return isConst(op.getLhs()) && isConst(op.getRhs());
 }
 
@@ -295,18 +293,9 @@ void ConverterToExpressionGraph::actOnSum(SumOp &op) {
       if (lhsConst && rhsConst) {
         continue;
       }
-      int64_t factor;
+      T factor;
       mlir::Value var;
-      if (lhsConst) {
-        factor = getCurrentVal<T>(mulOp.getLhs());
-        var = mulOp.getRhs();
-      } else if (rhsConst) {
-        factor = getCurrentVal<T>(mulOp.getRhs());
-        var = mulOp.getLhs();
-      } else {
-        llvm::report_fatal_error(
-            "Multiplication of two variables is not supported");
-      }
+      extractValAndFactor(mulOp, var, factor);
       graphBuilder_->createSimpleEdge<MulAddOp<T>>(
           opToNodeMap_.at(var.getDefiningOp()), node, factor);
       continue;

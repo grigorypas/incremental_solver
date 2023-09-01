@@ -16,6 +16,10 @@ class ValueType(Enum):
     def is_integer(self) -> bool:
         return self == ValueType.INTEGER
 
+    @property
+    def is_continuous(self) -> bool:
+        return self == ValueType.CONTINUOUS
+
 
 class TmpExpression(ABC):
     def __init__(self) -> None:
@@ -36,6 +40,38 @@ class TmpExpression(ABC):
         if self._index is not None:
             raise ValueError(
                 "Cannot modify in-place. The expression has already been used")
+
+    def __add__(self, other: Union[NumberType, VarDataType]) -> "LinearTmpExpression":
+        expr = LinearTmpExpression.create([self], [1])
+        expr += other
+        return expr
+
+    def __radd__(self, other: Union[NumberType, VarDataType]) -> "LinearTmpExpression":
+        return self.__add__(other)
+
+    def __sub__(self, other: Union[NumberType, VarDataType]) -> "LinearTmpExpression":
+        expr = LinearTmpExpression.create([self], [1])
+        expr -= other
+        return expr
+
+    def __rsub__(self, other: Union[NumberType, VarDataType]):
+        expr = LinearTmpExpression.create([self], [-1])
+        expr += other
+        return expr
+
+    def __neg__(self) -> "LinearTmpExpression":
+        return LinearTmpExpression.create([self], [-1])
+
+    def __mul__(self, other: NumberType) -> "LinearTmpExpression":
+        return LinearTmpExpression.create([self], [other])
+
+    def __rmul__(self, other: NumberType) -> "LinearTmpExpression":
+        return self.__mul__(other)
+
+    def __truediv__(self, other: NumberType) -> "LinearTmpExpression":
+        if other == 0:
+            raise ValueError("Division by 0!")
+        return self.__mul__(1 / other)
 
     @staticmethod
     def _convert_to_index_and_type(
@@ -74,7 +110,12 @@ class LinearTmpExpression(TmpExpression):
         expr._coefficients = list(coefficients)
         return expr
 
+    def copy(self) -> "LinearTmpExpression":
+        expr = LinearTmpExpression.create(vars=list(self._vars), coefficients=list(self._coefficients), bias=self._bias)
+        return expr
+
     def __iadd__(self, other: Union[NumberType, VarDataType]) -> "LinearTmpExpression":
+        self._throw_if_modified()
         if isinstance(other, NumberType):
             self._bias += other
         elif isinstance(other, LinearTmpExpression):
@@ -86,23 +127,77 @@ class LinearTmpExpression(TmpExpression):
             self._coefficients.append(1)
         return self
 
+    def __isub__(self, other: Union[NumberType, VarDataType]) -> "LinearTmpExpression":
+        self._throw_if_modified()
+        if isinstance(other, NumberType):
+            self._bias -= other
+        elif isinstance(other, LinearTmpExpression):
+            self._bias -= other._bias
+            self._vars.extend(other._vars)
+            self._coefficients.extend(-c for c in other._coefficients)
+        else:
+            self._vars.append(other)
+            self._coefficients.append(-1)
+        return self
+
+    def __imul__(self, other: NumberType) -> "LinearTmpExpression":
+        self._throw_if_modified()
+        self._bias *= other
+        for ind in range(len(self._coefficients)):
+            self._coefficients[ind] *= other
+        return self
+
+    def __itruediv__(self, other: NumberType) -> "LinearTmpExpression":
+        if other == 0:
+            raise ValueError("Division by 0!")
+        return self.__imul__(1 / other)
+
+    def __add__(self, other: Union[NumberType, VarDataType]) -> "LinearTmpExpression":
+        expr = self.copy()
+        expr += other
+        return expr
+
+    def __sub__(self, other: Union[NumberType, VarDataType]) -> "LinearTmpExpression":
+        expr = self.copy()
+        expr -= other
+        return expr
+
+    def __neg__(self) -> "LinearTmpExpression":
+        expr = self.copy()
+        expr *= -1
+        return expr
+
+    def __rsub__(self, other: NumberType) -> "LinearTmpExpression":
+        expr = - self
+        expr += other
+        return expr
+
+    def __mul__(self, other: NumberType) -> "LinearTmpExpression":
+        expr = self.copy()
+        expr *= other
+        return expr
+
     def _build(self, engine: "Engine") -> Tuple[int, ValueType]:
         if len(self._vars) == 0:
             return self._emit_const(self._bias, engine)
         value_type = ValueType.INTEGER
-        if isinstance(self._bias, float):
+        if isinstance(self._bias, float) or any(isinstance(c, float) for c in self._coefficients):
             value_type = ValueType.CONTINUOUS
         var_indexes = []
-        for v, c in zip(self._vars, self._coefficients):
+        for v in self._vars:
             ind, cur_value_type = self._convert_to_index_and_type(v, engine)
-            ind, cur_value_type = self._emit_multiply(
-                ind, c, cur_value_type, engine)
-            if cur_value_type == ValueType.CONTINUOUS:
+            if cur_value_type.is_continuous:
                 value_type = ValueType.CONTINUOUS
             var_indexes.append(ind)
+        for list_ind, ind in enumerate(var_indexes):
+            ind, _ = self._emit_multiply(
+                ind, self._coefficients[list_ind], value_type, engine)
+            var_indexes[list_ind] = ind
+        if value_type.is_continuous:
+            self._bias = float(self._bias)
         if self._bias != 0:
             var_indexes.append(self._emit_const(self._bias, engine)[0])
-        if value_type == ValueType.INTEGER:
+        if value_type.is_integer:
             ind = engine._model_builder.emit_integer_sum(var_indexes, self._id)
         else:
             ind = engine._model_builder.emit_double_sum(var_indexes, self._id)
@@ -186,6 +281,19 @@ class Variable(object):
         expr = LinearTmpExpression.create(vars=[self], coefficients=[1])
         expr += other
         return expr
+
+    def __sub__(self, other: Union[NumberType, VarDataType]) -> LinearTmpExpression:
+        expr = LinearTmpExpression.create(vars=[self], coefficients=[1])
+        expr -= other
+        return expr
+
+    def __rsub__(self, other: Union[NumberType, VarDataType]) -> LinearTmpExpression:
+        expr = LinearTmpExpression.create(vars=[self], coefficients=[-1])
+        expr += other
+        return expr
+
+    def __neg__(self) -> LinearTmpExpression:
+        return LinearTmpExpression.create([self], [-1])
 
     def __radd__(self, other: Union[NumberType, VarDataType]) -> LinearTmpExpression:
         return self.__add__(other)

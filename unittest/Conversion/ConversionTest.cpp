@@ -99,3 +99,20 @@ TEST(Converstion, IntVarMultiplyByDouble) {
   auto &expr = expressions[0];
   ASSERT_NEAR(expr.getDoubleValue(), 5.0, 0.001);
 }
+
+TEST(Conversion, DoubleSum) {
+  ModelFormulationBuilder modelBuilder;
+  auto v1 = modelBuilder.addIntegerVarDecl(5, 0);
+  auto v2 = modelBuilder.addIntegerVarDecl(7, 1);
+  modelBuilder.emitDoubleSum({modelBuilder.emitDoubleMultiply(v1, 0.5),
+                              modelBuilder.emitDoubleMultiply(v2, 0.5)},
+                             2);
+  modelBuilder.markAsTracked(2);
+  std::vector<DecisionVariable> vars;
+  std::vector<ValueExpression> expressions;
+  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  auto &expr = expressions[0];
+  ASSERT_NEAR(expr.getDoubleValue(), 6.0, 0.01);
+  vars[0].setIntValue(6);
+  ASSERT_NEAR(expr.getDoubleValue(), 6.5, 0.01);
+}
