@@ -1,6 +1,9 @@
 #include "ModelBuilderWrapper.h"
 #include "IncrementalSolver/Conversion/ConvertToExpressionGraph.h"
 
+#include "mlir/Pass/PassManager.h"
+#include "mlir/Transforms/Passes.h"
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -8,8 +11,18 @@ namespace py = pybind11;
 using namespace incremental_solver;
 
 void ModelBuilderWrapper::compile() {
-  convertToExpressionGraph(*builder_.getModule(), decisionVariables_,
+  const auto &mlirModule = builder_.getModule();
+  mlir::PassManager pm(mlirModule->getName());
+  pm.addPass(mlir::createCanonicalizerPass());
+  pm.addPass(mlir::createCSEPass());
+  if (mlir::failed(pm.run(mlirModule)))
+    llvm::report_fatal_error("Failed to apply optimization.");
+  convertToExpressionGraph(builder_.getModule(), decisionVariables_,
                            trackedExpressions_);
+}
+
+void incremental_solver::ModelBuilderWrapper::printMlir() {
+  builder_.getModule()->dump();
 }
 
 void init_model_builder(py::module &m) {
@@ -30,5 +43,6 @@ void init_model_builder(py::module &m) {
       .def("emit_integer_sum", &ModelBuilderWrapper::emitIntegerSum)
       .def("emit_double_sum", &ModelBuilderWrapper::emitDoubleSum)
       .def("emit_integer_multiply", &ModelBuilderWrapper::emitIntegerMultiply)
-      .def("emit_double_multiply", &ModelBuilderWrapper::emitDoubleMultiply);
+      .def("emit_double_multiply", &ModelBuilderWrapper::emitDoubleMultiply)
+      .def("print_mlir", &ModelBuilderWrapper::printMlir);
 }

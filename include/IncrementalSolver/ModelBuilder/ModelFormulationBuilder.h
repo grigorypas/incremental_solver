@@ -38,7 +38,7 @@ public:
     mlirIntegerType_ = builder_.getI64Type();
     mlirDoubleType_ = builder_.getF64Type();
   }
-  mlir::OwningOpRef<mlir::ModuleOp> getModule() { return module_; }
+  const mlir::ModuleOp &getModule() const { return module_; }
   mlir::Value getValueFromId(int64_t id);
 
   mlir::Value

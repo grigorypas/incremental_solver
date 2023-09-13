@@ -15,6 +15,7 @@ class ModelBuilderWrapper {
 public:
   ModelBuilderWrapper() {}
   void compile();
+  void printMlir();
   std::vector<expression_graph::DecisionVariable> getDecisionVariables() const {
     return decisionVariables_;
   }

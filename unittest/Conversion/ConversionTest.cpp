@@ -23,7 +23,7 @@ TEST(Conversion, TrackEqualInput) {
   modelBuilder.makeIntegerVarTracked(1);
   std::vector<DecisionVariable> vars;
   std::vector<ValueExpression> expressions;
-  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  convertToExpressionGraph(modelBuilder.getModule(), vars, expressions);
   ASSERT_EQ(vars.size(), 1);
   ASSERT_EQ(expressions.size(), 1);
   auto &var = vars[0];
@@ -41,7 +41,7 @@ TEST(Conversion, SumInt) {
   modelBuilder.makeIntegerVarTracked(3);
   std::vector<DecisionVariable> vars;
   std::vector<ValueExpression> expressions;
-  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  convertToExpressionGraph(modelBuilder.getModule(), vars, expressions);
   auto varMap = convertToMap(vars);
   ASSERT_EQ(expressions.size(), 1);
   auto &expr = expressions[0];
@@ -58,7 +58,7 @@ TEST(Conversion, SumWithConst) {
   modelBuilder.markAsTracked(2);
   std::vector<DecisionVariable> vars;
   std::vector<ValueExpression> expressions;
-  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  convertToExpressionGraph(modelBuilder.getModule(), vars, expressions);
   auto &expr = expressions[0];
   ASSERT_EQ(expr.getIntValue(), 32);
 }
@@ -68,7 +68,7 @@ TEST(Conversion, DoubleVar) {
   modelBuilder.addDoubleVarDecl(12.5, 0);
   std::vector<DecisionVariable> vars;
   std::vector<ValueExpression> expressions;
-  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  convertToExpressionGraph(modelBuilder.getModule(), vars, expressions);
   ASSERT_EQ(vars.size(), 1);
   auto &var = vars[0];
   ASSERT_EQ(var.getDoubleValue(), 12.5);
@@ -83,7 +83,7 @@ TEST(Converstion, DoubleMultiply) {
   modelBuilder.markAsTracked(1);
   std::vector<DecisionVariable> vars;
   std::vector<ValueExpression> expressions;
-  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  convertToExpressionGraph(modelBuilder.getModule(), vars, expressions);
   auto &expr = expressions[0];
   ASSERT_NEAR(expr.getDoubleValue(), 21.0, 0.001);
 }
@@ -95,7 +95,7 @@ TEST(Converstion, IntVarMultiplyByDouble) {
   modelBuilder.markAsTracked(1);
   std::vector<DecisionVariable> vars;
   std::vector<ValueExpression> expressions;
-  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  convertToExpressionGraph(modelBuilder.getModule(), vars, expressions);
   auto &expr = expressions[0];
   ASSERT_NEAR(expr.getDoubleValue(), 5.0, 0.001);
 }
@@ -110,7 +110,7 @@ TEST(Conversion, DoubleSum) {
   modelBuilder.markAsTracked(2);
   std::vector<DecisionVariable> vars;
   std::vector<ValueExpression> expressions;
-  convertToExpressionGraph(*modelBuilder.getModule(), vars, expressions);
+  convertToExpressionGraph(modelBuilder.getModule(), vars, expressions);
   auto &expr = expressions[0];
   ASSERT_NEAR(expr.getDoubleValue(), 6.0, 0.01);
   vars[0].setIntValue(6);

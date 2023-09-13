@@ -4,8 +4,11 @@ pybind11_add_module(isbindings
     ModelBuilderWrapper.cpp 
 )
 
+get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
+
 target_link_libraries(isbindings
 PRIVATE
+${conversion_libs}
 ExpressionGraph
 modelConversion
 ModelFormulationBuilder

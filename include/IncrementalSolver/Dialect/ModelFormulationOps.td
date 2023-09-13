@@ -30,7 +30,7 @@ def IS_IntegerTrackedVarDecl: IS_OpInOut<"integerTrackedVar">{
         Its value can be queried by user. 
     }];
     let arguments = (ins I64:$value, I64Attr:$id);
-    let assemblyFormat = "$value ` ` `[` `id` `=` $id `]` attr-dict";
+    let assemblyFormat = "$value ` ` `{` `id` `=` $id `}` attr-dict";
 }
 
 def IS_DoubleTrackedVarDecl: IS_OpInOut<"doubleTrackedVar">{
@@ -40,7 +40,7 @@ def IS_DoubleTrackedVarDecl: IS_OpInOut<"doubleTrackedVar">{
         Its value can be queried by user. 
     }];
     let arguments = (ins F64:$value, I64Attr:$id);
-    let assemblyFormat = "$value ` ` `[` `id` `=` $id `]` attr-dict";
+    let assemblyFormat = "$value ` ` `{` `id` `=` $id `}` attr-dict";
 }
 
 def IS_IntegerDecisionVarDecl: IS_OpInOut<"integerDecisionVar">{
@@ -53,7 +53,8 @@ def IS_IntegerDecisionVarDecl: IS_OpInOut<"integerDecisionVar">{
         as metadata for optimization purposes. 
     }];
     let arguments = (ins SI64Attr:$value, I64Attr:$id, SI64Attr:$lowerBound, SI64Attr:$upperBound);
-    let results = (outs I64:$result); 
+    let results = (outs I64:$result);
+    let assemblyFormat = "` ` `{` `value` `=` $value `,` `id` `=` $id `,` `lowerBound` `=` $lowerBound `,` `upperBound` `=` $upperBound `}` `:` type($result) attr-dict"; 
 }
 
 def IS_DoubleDecisionVarDecl: IS_OpInOut<"doubleDecisionVar">{
@@ -67,6 +68,7 @@ def IS_DoubleDecisionVarDecl: IS_OpInOut<"doubleDecisionVar">{
     }];
     let arguments = (ins F64Attr:$value, I64Attr:$id, F64Attr:$lowerBound, F64Attr:$upperBound);
     let results = (outs F64:$result);
+    let assemblyFormat = "` ` `{` `value` `=` $value `,` `id` `=` $id `,` `lowerBound` `=` $lowerBound `,` `upperBound` `=` $upperBound `}` `:` type($result) attr-dict";
 } 
 
 def IS_IntegerSumOp: IS_VariadicInputOp<"sumi", I64, I64, SI64Attr, [Commutative, SameOperandsAndResultType]>{
