@@ -29,6 +29,10 @@ class ModelFormulationBuilder {
   std::unordered_map<int, mlir::Value> variables_;
   mlir::IntegerType mlirIntegerType_;
   mlir::FloatType mlirDoubleType_;
+  std::unordered_map<mlir::Operation *, std::variant<Integer, Double>>
+      lowerBounds_;
+  std::unordered_map<mlir::Operation *, std::variant<Integer, Double>>
+      upperBounds_;
 
 public:
   ModelFormulationBuilder() : builder_(&context_) {
@@ -92,6 +96,45 @@ private:
   }
   mlir::Value registerVariable(mlir::Value val,
                                std::optional<int64_t> id = std::nullopt);
+  template <typename T>
+  void setLowerBound(mlir::Value val, std::optional<T> lowerBound) {
+    if (lowerBound) {
+      auto *op = val.getDefiningOp();
+      lowerBounds_.emplace(op, lowerBound.value());
+    }
+  }
+
+  template <typename T>
+  void setUpperBound(mlir::Value val, std::optional<T> upperBound) {
+    if (upperBound) {
+      auto *op = val.getDefiningOp();
+      upperBounds_.emplace(op, upperBound.value());
+    }
+  }
+
+  template <typename T>
+  mlir::Value setBounds(mlir::Value val, std::optional<T> lb,
+                        std::optional<T> ub) {
+    setLowerBound(val, lb);
+    setUpperBound(val, ub);
+    return val;
+  }
+
+  template <typename T> std::optional<T> getLowerBound(mlir::Value val) const {
+    auto it = lowerBounds_.find(val.getDefiningOp());
+    if (it == lowerBounds_.end()) {
+      return std::nullopt;
+    }
+    return std::get<T>(it->second);
+  }
+
+  template <typename T> std::optional<T> getUpperBound(mlir::Value val) const {
+    auto it = upperBounds_.find(val.getDefiningOp());
+    if (it == upperBounds_.end()) {
+      return std::nullopt;
+    }
+    return std::get<T>(it->second);
+  }
 };
 
 } // namespace incremental_solver
